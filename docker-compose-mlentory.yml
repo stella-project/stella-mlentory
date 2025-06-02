@@ -1,0 +1,71 @@
+name: stella
+
+networks:
+  mlentory_network:
+    external: true
+
+services:
+  app:
+    build: ./stella-app/web
+    volumes:
+      - ./data:/data
+    expose:
+      - "8005"
+    ports:
+      - "8080:8005"
+    networks:
+      - mlentory_network
+    environment:
+      # Config
+      FLASK_APP: app/app
+      FLASK_CONFIG: postgres
+      INTERLEAVE: "True"
+      BULK_INDEX: "False"
+      DELETE_SENT_SESSION: "True"
+      INTERVAL_DB_CHECK: 3
+      SESSION_EXPIRATION: 6
+      SESSION_KILL: 120
+
+      # Systems
+      SYSTEMS_CONFIG: |
+        {
+            "mlentory_base": {"type": "ranker", "base": true}
+        }
+      # Stella Server
+      STELLA_SERVER_ADDRESS: http://server:8000
+      STELLA_SERVER_USER: site@stella-project.org
+      STELLA_SERVER_PASS: pass
+      STELLA_SERVER_USERNAME: site
+
+      # Database
+      POSTGRES_USER: postgres
+      POSTGRES_PW: change-me
+      POSTGRES_DB: postgres
+      POSTGRES_URL: db-app:5430
+
+    command: gunicorn -w 2 --timeout 60 -b :8005 'app.app:create_app()'
+    depends_on:
+      - db-app
+      - mlentory_base
+
+  db-app:
+    image: postgres
+    expose:
+      - "5430"
+    ports:
+      - "5430:5430"
+    networks:
+      - mlentory_network
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=change-me
+      - POSTGRES_DB=postgres
+    command: -p 5430
+
+  mlentory_base:
+    build: mlentory_base
+    container_name: mlentory_base
+    volumes:
+      - ./data/:/data/
+    networks:
+      - mlentory_network
