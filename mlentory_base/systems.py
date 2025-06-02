@@ -5,7 +5,7 @@ import logging
 class Ranker:
     def __init__(self):
         """Initialize the Ranker with the base URL and session."""
-        
+        self.timeout = 10  # seconds
         self.base_url = "http://backend:8000/models/search_by_phrase"  # Use this when accessing it outside of the container
         # self.base_url = "http://localhost:8000/models/search_by_phrase"  # Use this when accessing it from within the container
         self.session = requests.Session()
@@ -45,6 +45,6 @@ class Ranker:
 
 
 
-# instance = Ranker
+# instance = Ranker()
 # results = instance.rank_publications("test", 0, 20)
 # print(results)
