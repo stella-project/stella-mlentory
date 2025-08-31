@@ -29,7 +29,7 @@
                     Results
                 </div>
                 <div class="card-body">
-                    <pre class="bg-light p-3 border rounded">{{ results | tojson(indent=2) }}</pre>
+                    <pre class="bg-light p-3 border rounded">{{ results | tojson(indent=2) | safe }}</pre>
                 </div>
             </div>
         {% endif %}

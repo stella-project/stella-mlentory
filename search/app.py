@@ -12,7 +12,7 @@ def home():
     if not query:
         return render_template("home.html", query=query, results=None)
     try:
-        response = requests.get("http://app:8005/stella/api/v1/" + "ranking?query=" + query)
+        response = requests.get("http://app:8000/stella/api/v1/" + "ranking?query=" + query)
         response.raise_for_status()
         results = response.json()
         print(results)
