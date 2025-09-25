@@ -1,0 +1,94 @@
+name: stella-dev
+
+networks:
+  mlentory_network:
+    external: true
+
+services:
+  app:
+    build:
+      context: ./stella-app/web
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./data:/data
+      - ./web:/app
+    expose:
+      - "8005"
+    ports:
+      - "8080:8005"
+    networks:
+      - mlentory_network
+    environment:
+      # Config
+      FLASK_APP: app/app
+      DEBUG: "True"
+      FLASK_CONFIG: postgres
+      INTERLEAVE: "True"
+      BULK_INDEX: "False"
+      INTERVAL_DB_CHECK: 3
+      SESSION_EXPIRATION: 6
+      SESSION_KILL: 120
+      SENDFEEDBACK: "False"
+
+      # Systems
+      SYSTEMS_CONFIG: |
+        {
+            "mlentory_base": {"type": "ranker", "base": true, "docid": "db_identifier", "hits_path": "$.models"},
+            "mlentory_experiment": {"type": "ranker", "docid": "db_identifier", "hits_path": "$.models"}
+        }
+
+
+      # Stella Server
+      STELLA_SERVER_ADDRESS: http://server:8000
+      STELLA_SERVER_USER: site@stella-project.org
+      STELLA_SERVER_PASS: pass
+      STELLA_SERVER_USERNAME: site
+
+      # Database
+      POSTGRES_USER: postgres
+      POSTGRES_PW: change-me
+      POSTGRES_DB: postgres
+      POSTGRES_URL: db-app:5430
+
+    command: flask run --host=0.0.0.0 --port=8005 --reload --debug
+    depends_on:
+      - db-app
+      - mlentory_base
+      - mlentory_experiment
+
+  db-app:
+    image: postgres
+    restart: unless-stopped
+    volumes:
+      - ./data/db-app-data:/var/lib/postgresql/data
+    expose:
+      - "5430"
+    ports:
+      - "5430:5430"
+    networks:
+      - mlentory_network
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: change-me
+      POSTGRES_DB: postgres
+    command: -p 5430
+
+  mlentory_base:
+    build: ../../mlentory_base
+    container_name: mlentory_base
+    volumes:
+      - ./data/:/data/
+    networks:
+      - mlentory_network
+    ports:
+      - "5000:5000"
+
+  mlentory_experiment:
+    build: ../../mlentory_experiment
+    container_name: mlentory_experiment
+    volumes:
+      - ./data/:/data/
+    networks:
+      - mlentory_network
+    ports:
+      - "5001:5000"
