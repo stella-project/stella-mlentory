@@ -6,39 +6,23 @@ app = Flask(__name__)
 ranker = Ranker()
 
 
-@app.route("/")
-def redirect_to_test():
-    return redirect("/test", code=302)
-
-
 @app.route("/test", methods=["GET"])
 def test():
-    return "Container is running", 200
+    """Returns a JSON message indicating the container is running."""
+    return jsonify({"message": "Container is running"}), 200
 
-
-@app.route("/ranking", methods=["GET"])
-def ranking():
-    query = request.args.get("query")
-    if not query:
-        return jsonify({"error": "Query parameter 'query' is required."}), 400
-
+@app.route("/<path:url>", methods=["GET"])
+def proxy(url):
+    """Proxy requests to the appropriate endpoint."""
+    # Ranking
     try:
-        page = int(request.args.get("page", 0))
-    except ValueError:
-        return jsonify({"error": "Parameter 'page' must be an integer."}), 400
-
-    try:
-        rpp = int(request.args.get("rpp", 20))
-    except ValueError:
-        return jsonify({"error": "Parameter 'rpp' must be an integer."}), 400
-
-    try:
-        response = ranker.rank_publications(query, page, rpp)
+        response = ranker.rank_publications(url, request.args)
     except Exception as e:
         app.logger.error(f"Error in ranking publications: {e}", exc_info=True)
         return jsonify({"error": "Failed to rank publications."}), 500
 
     return jsonify(response), 200
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
