@@ -1,3 +1,7 @@
 [submodule "stella-app"]
 	path = stella-app
 	url = https://github.com/stella-project/stella-app.git
+[submodule "stella-server"]
+	path = stella-server
+	url = https://github.com/stella-project/stella-server
+	branch = mlentory
