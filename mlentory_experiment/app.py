@@ -16,7 +16,7 @@ def proxy(url):
     """Proxy requests to the appropriate endpoint."""
     # Ranking
     try:
-        response = ranker.rank_publications(url, request.args)
+        response = ranker.rank_publications(request.args)
     except Exception as e:
         app.logger.error(f"Error in ranking publications: {e}", exc_info=True)
         return jsonify({"error": "Failed to rank publications."}), 500
