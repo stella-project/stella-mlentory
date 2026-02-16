@@ -17,11 +17,56 @@ If already cloned, update submodules with:
 git submodule update --init --recursive
 ```
 
+### Updating Submodules
+
+This repository uses git submodules for `stella-app` and `stella-server`, both tracking the `mlentory` branch.
+
+#### When you make changes to stella-app or stella-server:
+
+1. **Make your changes in the submodule** (on the `mlentory` branch):
+   ```bash
+   cd stella-app  # or stella-server
+   git checkout mlentory
+
+   git add .
+   git commit -m "Your commit message"
+   git push origin mlentory
+   ```
+
+2. **Update the pointer in stella-mlentory** to reference the new commit:
+   ```bash
+   cd /path/to/stella-mlentory
+   git submodule update --remote stella-app  # or stella-server
+   git add stella-app  # or stella-server
+   git commit -m "Update stella-app submodule to latest mlentory commit"
+   ```
+
+   Alternatively, you can manually update the pointer:
+   ```bash
+   cd /path/to/stella-mlentory
+   git add stella-app  # or stella-server
+   git commit -m "Update submodule pointer"
+   ```
+
+3. **Sync submodule URLs** (if needed):
+   ```bash
+   git submodule sync
+   ```
+
+#### To update both submodules to latest commits from their mlentory branches:
+
+```bash
+git submodule update --remote
+git add stella-app stella-server
+git commit -m "Update stella-app and stella-server submodules to latest mlentory branch"
+```
+
 ### Start the STELLA App
 
 Run the following to start the STELLA app, its PostgreSQL database, and the mlentory_base and mlentory_experiment containers:
 
 ```
+cd stella-app
 sudo docker compose -f docker-compose-mlentory.yml
 ```
 
