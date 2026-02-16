@@ -7,20 +7,37 @@ class Ranker:
     def __init__(self):
         """Initialize the Ranker with the base URL and session."""
         self.timeout = 10  # seconds
-        self.base_url = "http://backend:8000/models/search_with_vector"  # Use this when accessing it outside of the container
-        # self.base_url = "http://localhost:8000/models/search_with_vector" # Use this when accessing it from within the container
+        self.default_base_url = "http://backend:8000/models"  # Default base URL if not in path
+        self.endpoint = "/search_with_vector"  # Endpoint for experimental system
         self.session = requests.Session()
         self.logger = logging.getLogger(self.__class__.__name__)
 
 
-    def rank_publications(self, params) -> dict:
+    def rank_publications(self, base_url_path: str, params: dict) -> dict:
         """
         Retrieve ranked publications from the MLentory API based on search criteria.
+        
+        Args:
+            base_url_path: The base URL path from STELLA proxy (e.g., "backend:8000/models")
+            params: Query parameters for the search request
         """
-        request_params = {**params}
+        request_params = {**params.copy()}
+        
+        # STELLA forwards the path after /proxy/ directly, so base_url_path is already "backend:8000/models"
+
+        if base_url_path and not base_url_path.startswith(("http://", "https://")):
+            base_url = f"http://{base_url_path}"
+        elif base_url_path:
+            base_url = base_url_path
+        else:
+            base_url = self.default_base_url
+        
+        # Construct full URL: base_url + hardcoded endpoint
+        full_url = f"{base_url}{self.endpoint}"
+
         try:
             response = self.session.get(
-                self.base_url, params=request_params, timeout=self.timeout
+                full_url, params=request_params, timeout=self.timeout
             )
             response.raise_for_status()
             response = response.json()

@@ -29,7 +29,8 @@ services:
       # Systems
       SYSTEMS_CONFIG: |
         {
-            "mlentory_base": {"type": "ranker", "base": true}
+            "mlentory_base": {"type": "ranker", "base": true, "docid": "db_identifier", "hits_path": "$.models"},
+            "mlentory_experiment": {"type": "ranker", "docid": "db_identifier", "hits_path": "$.models"}
         }
       # Stella Server
       STELLA_SERVER_ADDRESS: http://server:8000
@@ -47,6 +48,7 @@ services:
     depends_on:
       - db-app
       - mlentory_base
+      - mlentory_experiment
 
   db-app:
     image: postgres
@@ -65,6 +67,14 @@ services:
   mlentory_base:
     build: mlentory_base
     container_name: mlentory_base
+    volumes:
+      - ./data/:/data/
+    networks:
+      - mlentory_network
+
+  mlentory_experiment:
+    build: mlentory_experiment
+    container_name: mlentory_experiment
     volumes:
       - ./data/:/data/
     networks:
